@@ -67,9 +67,7 @@ MUL_expr
   R      e1 = <UNARY_expr e1>
 
 UNARY_expr
-  R '-'e1 = <SUB (/0/) <UNARY_expr e1>>
-  R '+'e1 = <UNARY_expr e1>
-  R '!'e1 = <not_helper <UNARY_expr e1>>
+  R s('-+!')1e2 = <unary_helper s1 <UNARY_expr e2>>
   R    e1 = <POSTFIX_expr e1>
 
 POSTFIX_expr
@@ -116,13 +114,19 @@ bool_helper
   s('<>')1e2 = /0/
   '='e1      = /1/
 
-unpack_helper
-  (e1) = e1
+unpack_last_helper
+  e1(e2) = e2
 
 mul_helper
   s(N)1'*'s(N)2 = <mul (s1) s2>
   s(N)1'/'s(N)2 = <div (s1) s2>
-  s(N)1'%'s(N)2 = <unpack_helper <last /1/<dr (s1) s2>>>
+  s(N)1'%'s(N)2 = <unpack_last_helper <dr (s1) s2>>
+
+unary_helper
+  '-'S(N)1 = <SUB (/0/) s1>
+  '+'S(N)1 = s1
+  '!'S(N)1 = <not_helper s1>
+
 
   end   
 
