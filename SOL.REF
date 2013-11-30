@@ -60,15 +60,16 @@ SHIFT_expr
   e1 = <SUM_expr e1>
 
 SUM_expr
-  e1 = <MUL_expr e1>
+  R v1s('+-')2v3 = <sum_helper <SUM_expr v1> s2 <MUL_expr v3>>
+  R e1 = <MUL_expr e1>
 
 MUL_expr
-  R e1s('*/%')2e3 = <mul_helper <MUL_expr e1> s2 <UNARY_expr e3>>
-  R      e1 = <UNARY_expr e1>
+  R v1s('*/%')2v3 = <mul_helper <MUL_expr v1> s2 <UNARY_expr v3>>
+  R e1            = <UNARY_expr e1>
 
 UNARY_expr
-  R s('-+!')1e2 = <unary_helper s1 <UNARY_expr e2>>
-  R    e1 = <POSTFIX_expr e1>
+  R s('-+!')1v2 = <unary_helper s1 <UNARY_expr v2>>
+  R e1          = <POSTFIX_expr e1>
 
 POSTFIX_expr
   e1 = <PRIME_expr e1>
@@ -118,9 +119,13 @@ unpack_last_helper
   e1(e2) = e2
 
 mul_helper
-  s(N)1'*'s(N)2 = <mul (s1) s2>
-  s(N)1'/'s(N)2 = <div (s1) s2>
-  s(N)1'%'s(N)2 = <unpack_last_helper <dr (s1) s2>>
+  v1'*'v2 = <mul (v1) v2>
+  v1'/'v2 = <div (v1) v2>
+  v1'%'v2 = <unpack_last_helper <dr (v1) v2>>
+
+sum_helper
+  v1'+'v2 = <add (v1) v2>
+  v1'-'v2 = <sub (v1) v2>
 
 unary_helper
   '-'S(N)1 = <SUB (/0/) s1>
@@ -128,28 +133,4 @@ unary_helper
   '!'S(N)1 = <not_helper s1>
 
 
-  end   
-
-
-* go = <calculation<paring<prout ' give a formula: '><card>>>
-* 
-* paring e1')'e2 = <paring<par1 e1> e2>
-*             e1 = e1
-* par1 R e1'('e2 = e1(e2) 
-* 
-* calculation R e1s('-+')3e2 = <cal1<calculation e1> s3 <slag e2>>
-*                          e1 = <slag e1>
-* 
-* cal1 e1'+'e2 = <add (e1)e2>
-*      e1'-'e2 = <sub (e1)e2>
-* 
-* slag R e1s('*/')3e2 = <cal2 <slag e1> s3 <mnog e2>>
-*                     e1 = <mnog e1>
-* 
-* cal2 e1'*'e2 = <mul (e1)e2>
-*      e1'/'e2 = <div (e1)e2>
-* 
-* mnog (e1) = <calculation e1>
-*        e1 = <numb e1>
-* 
-*  end
+  end
