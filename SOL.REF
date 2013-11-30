@@ -24,16 +24,15 @@
 
   start
   entry go
-  extrn NUMB,SYMB,CVD,FIRST,LAST
-  extrn DIV,MUL,ADD,SUB,NREL,DR
-  extrn PROUT,CARD,PROUTM
+  extrn NUMB,SYMB,CVD,CVB,FIRST,LAST
+  extrn DIV,MUL,ADD,SUB,NREL,DR,M1
+  extrn PROUT,CARD,PROUTM,ERROR
   empty PLUSASSIGN, MINUSASSIGN, MULASSIGN, DIVASSIGN, REMASSIGN, LSHIFTASSIGN, RSHIFTASSIGN, EQ, NE, GE, LE, LSHIFT, RSHIFT, PP, MM, OR, AND
 
-*go = <prout 'Please, enter C-style expression>'><prout 'Result: '<eval <card>>>
 go = <proutm <eval <card>>>
 
 eval
-  e1 = <MAIN_expr <preprocess e1>>
+  e1 = <cvd <MAIN_expr <preprocess e1>>>
 
 MAIN_expr
   e1 = <ASSIGN_expr e1>
@@ -51,24 +50,27 @@ AND_expr
   e1 = <EQ_expr e1>
 
 EQ_expr
+  R v1s(/EQ//NE/)2v3 = <eq_hp <EQ_expr v1> s2 <GE_expr v3>>
   e1 = <GE_expr e1>
 
 GE_expr
+  R v1s('<>'/GE//LE/)2v3 = <ge_hp <GE_expr v1> s2 <SHIFT_expr v3>>
   e1 = <SHIFT_expr e1>
 
 SHIFT_expr
+  R v1s(/LSHIFT//RSHIFT/)2v3 = <shift_hp <SHIFT_expr v1> s2 <SUM_expr v3>>
   e1 = <SUM_expr e1>
 
 SUM_expr
-  R v1s('+-')2v3 = <sum_helper <SUM_expr v1> s2 <MUL_expr v3>>
+  R v1s('+-')2v3 = <sum_hp <SUM_expr v1> s2 <MUL_expr v3>>
   R e1 = <MUL_expr e1>
 
 MUL_expr
-  R v1s('*/%')2v3 = <mul_helper <MUL_expr v1> s2 <UNARY_expr v3>>
+  R v1s('*/%')2v3 = <mul_hp <MUL_expr v1> s2 <UNARY_expr v3>>
   R e1            = <UNARY_expr e1>
 
 UNARY_expr
-  R s('-+!')1v2 = <unary_helper s1 <UNARY_expr v2>>
+  R s('-+!')1v2 = <unary_hp s1 <UNARY_expr v2>>
   R e1          = <POSTFIX_expr e1>
 
 POSTFIX_expr
@@ -76,16 +78,16 @@ POSTFIX_expr
 
 PRIME_expr
   (e1)  = <MAIN_expr e1>
-  e(D)1 = <numb e1>
+  e(D)1 = <cvb e1>
 
 preprocess
   e1 = <parentheses <escape e1>>
 
 parentheses
-  e1')'e2 = <parentheses <parentheses_helper e1> e2>
+  e1')'e2 = <parentheses <parentheses_hp e1> e2>
   e1      = e1
 
-parentheses_helper
+parentheses_hp
   R e1'('e2 = e1(e2)
 
 escape
@@ -107,30 +109,65 @@ escape
   e1'||'e2  = <escape e1/OR/e2>
   e1        = e1
 
-not_helper
-  '-'s(N)1 = <bool_helper <nrel (/0/) s1>>
-  s(N)1 = <bool_helper <nrel (/0/) s1>>
+not_hp
+  '-'v1 = <bool_eq <nrel (/0/) v1>>
+  v1 = <bool_eq <nrel (/0/) v1>>
 
-bool_helper
-  s('<>')1e2 = /0/
-  '='e1      = /1/
+bool_eq
+  s('=')1v2 = /1/
+  e1    = /0/
 
-unpack_last_helper
+bool_ne
+  s('<>')1v2 = /1/
+  e1         = /0/
+
+bool_lt
+  s('<')1v2 = /1/
+  e1        = /0/
+
+bool_le
+  s('<=')1v2 = /1/
+  e1         = /0/
+
+bool_ge
+  s('>=')1v2 = /1/
+  e1         = /0/
+
+bool_gt
+  s('>')1v2 = /1/
+  e1        = /0/
+
+unpack_last_hp
   e1(e2) = e2
 
-mul_helper
+mul_hp
   v1'*'v2 = <mul (v1) v2>
   v1'/'v2 = <div (v1) v2>
-  v1'%'v2 = <unpack_last_helper <dr (v1) v2>>
+  v1'%'v2 = <unpack_last_hp <dr (v1) v2>>
 
-sum_helper
+sum_hp
   v1'+'v2 = <add (v1) v2>
   v1'-'v2 = <sub (v1) v2>
 
-unary_helper
-  '-'S(N)1 = <SUB (/0/) s1>
-  '+'S(N)1 = s1
-  '!'S(N)1 = <not_helper s1>
+unary_hp
+  '-'v1 = <SUB (/0/) v1>
+  '+'v1 = v1
+  '!'v1 = <not_hp v1>
 
+shift_hp
+  v1s(/RSHIFT//LSHIFT/)2/0/ = v1
+  v1s(/RSHIFT//LSHIFT/)2'-'e3 = <prout 'shift by negative'><error>
+  v1s(/RSHIFT/)2v3 = <shift_hp <div (v1) /2/> /RSHIFT/ <M1 v3>>
+  v1s(/LSHIFT/)2v3 = <shift_hp <mul (v1) /2/> /LSHIFT/ <M1 v3>>
+
+ge_hp
+  v1s('>')2v3 = <bool_gt <nrel (v1) v3>>
+  v1s('<')2v3 = <bool_lt <nrel (v1) v3>>
+  v1s(/GE/)2v3 = <bool_ge <nrel (v1) v3>>
+  v1s(/LE/)2v3 = <bool_le <nrel (v1) v3>>
+
+eq_hp
+  v1s(/EQ/)2v3 = <bool_eq <nrel (v1) v3>>
+  v1s(/NE/)2v3 = <bool_ne <nrel (v1) v3>>
 
   end
