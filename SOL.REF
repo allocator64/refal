@@ -83,7 +83,7 @@ PRIME_expr
   e(D)1 = <cvb e1>
 
 preprocess
-  e1 = <parentheses <escape e1>>
+  e1 = <parentheses <clean_ws <escape e1>>>
 
 parentheses
   e1')'e2 = <parentheses <parentheses_hp e1> e2>
@@ -110,6 +110,10 @@ escape
   e1'&&'e2  = <escape e1/AND/e2>
   e1'||'e2  = <escape e1/OR/e2>
   e1        = e1
+
+clean_ws
+  e1' 'e2 = <clean_ws e1 e2>
+  e1      = e1
 
 not_hp
   '-'v1 = <bool_eq <nrel (/0/) v1>>
