@@ -24,23 +24,26 @@
 
   start
   entry go
-  extrn NUMB,SYMB,CVD,CVB,FIRST,LAST
+  extrn NUMB,SYMB,CVD,CVB,BR,CP,RP
   extrn DIV,MUL,ADD,SUB,NREL,DR,M1
   extrn PROUT,CARD,PROUTM,ERROR
-  empty PLUSASSIGN, MINUSASSIGN, MULASSIGN, DIVASSIGN, REMASSIGN, LSHIFTASSIGN, RSHIFTASSIGN, EQ, NE, GE, LE, LSHIFT, RSHIFT, PP, MM, OR, AND
+  empty PLUSASGN, MINUSASGN, MULASGN, DIVASGN, REMASGN, LSHIFTASGN, RSHIFTASGN, EQ, NE, GE, LE, LSHIFT, RSHIFT, PP, MM, OR, AND
+  
 go = <eval <card>>
 
 eval
   e1 = <MAIN_expr <preprocess e1>>
 
 MAIN_expr
-  e1 = <ASSIGN_expr e1>
+  R v1','v2 = <rp 'trash='<MAIN_expr v1>><ASSIGN_expr v2>
+  v1        = <ASSIGN_expr v1>
 
 ASSIGN_expr
-  e1 = <COND_expr e1>
+  v1s('='/PLUSASGN//MINUSASGN//MULASGN//DIVASGN//REMASGN//LSHIFTASGN//RSHIFTASGN/)2v3 = <assign_hp ((v1)s2) <ASSIGN_expr v3>>  
+  v1 = <COND_expr v1>
 
 COND_expr
-  e1 = <cond_base_hp <cond_hp e1>>
+  v1 = <cond_base_hp <cond_hp v1>>
 
 OR_expr
   R v1/OR/v2 = <bool_or (<bool <OR_expr v1>>) <bool <AND_expr v2>>>
@@ -78,8 +81,9 @@ POSTFIX_expr
   e1 = <PRIME_expr e1>
 
 PRIME_expr
-  (e1)  = <MAIN_expr e1>
-  e(D)1 = <numb e1>
+  (v1)  = <MAIN_expr v1>
+  v(D)1 = <numb v1>
+  s('_'L)1e('_'LD)2 = <storage_get s1e2>
 
 preprocess
   e1 = <parentheses <clean_ws <escape e1>>>
@@ -92,12 +96,12 @@ parentheses_hp
   R e1'('e2 = e1(e2)
 
 escape
-  e1'+='e2  = <escape e1/PLUSASSIGN/e2>
-  e1'-='e2  = <escape e1/MINUSASSIGN/e2>
-  e1'/='e2  = <escape e1/DIVASSIGN/e2>
-  e1'%='e2  = <escape e1/REMASSIGN/e2>
-  e1'<<='e2 = <escape e1/LSHIFTASSIGN/e2>
-  e1'>>='e2 = <escape e1/RSHIFTASSIGN/e2>
+  e1'+='e2  = <escape e1/PLUSASGN/e2>
+  e1'-='e2  = <escape e1/MINUSASGN/e2>
+  e1'/='e2  = <escape e1/DIVASGN/e2>
+  e1'%='e2  = <escape e1/REMASGN/e2>
+  e1'<<='e2 = <escape e1/LSHIFTASGN/e2>
+  e1'>>='e2 = <escape e1/RSHIFTASGN/e2>
   e1'=='e2  = <escape e1/EQ/e2>
   e1'!='e2  = <escape e1/NE/e2>
   e1'>='e2  = <escape e1/GE/e2>
@@ -208,6 +212,27 @@ cond_base_hp
   (/0/)(v1)v2 = <COND_expr v2>
   (/2/)v1 = v1
 
-  end
+assign_hp
+  ((s('_'L)1e('_'LD)2)s3)v4 = <assign_do ((s1e2)s3)v4>
 
-*? ? ?: : : ?: ?:
+assign_do
+  ((v1)'=')v3 = <storage_put (v1)v3>
+  ((v1)/PLUSASGN/)v3 = <storage_put (v1)<ADD (<storage_get v1>) v3>>
+  ((v1)/MINUSASGN/)v3 = <storage_put (v1)<SUB (<storage_get v1>) v3>>
+  ((v1)/MULASGN/)v3 = <storage_put (v1)<MUL (<storage_get v1>) v3>>
+  ((v1)/DIV/)v3 = <storage_put (v1)<DIV (<storage_get v1>) v3>>
+  ((v1)/REMASGN/)v3 = <storage_put (v1)<mul_hp <storage_get v1> '%' v3>>
+  
+storage_put
+  (v1)v(N)2 = <rp '_'v1 '=' v2>v2
+  (v1)'-'v(N)2 = <rp '_'v1 '=' '-'v2>'-'v2
+  (v1)e2 = <prout 'incorrect value 'e2>
+
+storage_get
+  v1 = <check_value (v1)<cp '_'v1>>
+
+check_value
+  (v1)v2 = v2
+  (v1)e2 = <prout 'use of undeclared identifier 'v1><error>
+
+  end
