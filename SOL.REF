@@ -44,9 +44,11 @@ COND_expr
   e1 = <OR_expr e1>
 
 OR_expr
+  R v1/OR/v2 = <bool_or (<bool <OR_expr v1>>) <bool <AND_expr v2>>>
   e1 = <AND_expr e1>
 
 AND_expr
+  R v1/AND/v2 = <bool_and (<bool <AND_expr v1>>) <bool <EQ_expr v2>>>
   e1 = <EQ_expr e1>
 
 EQ_expr
@@ -112,6 +114,21 @@ escape
 not_hp
   '-'v1 = <bool_eq <nrel (/0/) v1>>
   v1 = <bool_eq <nrel (/0/) v1>>
+
+bool
+  v1 = <not_hp <not_hp v1>>
+
+bool_and
+  (/0/)/0/ = /0/
+  (/0/)/1/ = /0/
+  (/1/)/0/ = /0/
+  (/1/)/1/ = /1/
+
+bool_or
+  (/0/)/0/ = /0/
+  (/0/)/1/ = /1/
+  (/1/)/0/ = /1/
+  (/1/)/1/ = /1/
 
 bool_eq
   s('=')1v2 = /1/
