@@ -1,0 +1,42 @@
+* Задачи семантической проверки и интерпретации
+* Дана программа со следующей структурой:
+* <программа>::= <оператор> | <программа> ; <оператор>
+* <оператор>::= <оп. присв.> | <оп. перехода> | <метка> : <оператор>
+* <оп. присв.>::= <идентификатор> := <выражение>
+* <оп. перехода>::= Goto <метка>
+* <метка>::= <последовательность десятичных цифр>
+* <выражение>::= <идентификатор> | <целое без знака>
+* Проверить, нет ли в программе переходов на несуществующие метки (найти все такие ситуации).
+
+   start
+   entry go
+   extrn NUMB
+   extrn PROUT,CARD,PRINT
+   extrn BR,DG,CP, DGALL
+   extrn opnput,opnget,clsput,clsget,libget,libput
+
+go = <semant<print<erase<readf>>>><prout <dgall>>
+* go = <semant<print 'a:=4; b:=7; GOTO 3456; 3457:f:=5;'>><prout <dgall>>
+
+readf  = <opnget 'test.txt'><readf1 <libget>>
+readf1 v1 = v1 <readf1<libget>>
+          = <clsget>
+
+erase e1'; 'e2 = e1<erase ';'e2>
+            e1 = e1
+
+semant R e1';'e(' ')2v3';' = <semant e1';'><operator <print v3>>';'
+                     e1';' = <operator e1>';'
+                        e1 = <prout e1'; was missed'> 
+
+operator  s(L)1e(LD)2':='e3 = s1e2':='<vyr e3>
+           'GOTO 'v(D)1 = 'GOTO '<numb v1><br 'MR='v1','<DG 'MR'>>
+           v(D)1':'v2 = <numb v1>':'<operator v2><br 'ML='v1','<DG 'ML'>>
+                  e1 = <print e1>
+
+vyr s(L)1e(LD)2 = (s1e2)
+     v(D)1 = <numb v1>
+
+
+ end
+* <br 'ML='v1','<DG 'ML'>>

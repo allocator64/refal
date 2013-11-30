@@ -1,0 +1,26 @@
+fact start
+  entry go
+  extrn prout,op(xopen),cl(xclose),p(xput),g(xget),symb,p1
+go   = <opw /0/> <w /0/> <p /0/ '\032'> <clw /0/> +
+       <opw /1/> <w /1/> <p /1/ '\032'> <clw /1/> +
+       <f /1/>  <f /2/>  <f /3/> 
+f s1 = <opr s1> <opw s1> <rw s1s1> <clw s1> <clr s1> +
+       <opr s1> <opw <p1 s1>> <rw s1 <p1 s1>> <clw <p1 s1>> <clr s1> 
+opw s1 = <op 'w's1 'f' <symb s1> '.dat'>
+opr s1 = <op 'r's1 'f' <symb s1> '.dat'>
+clw s1 = <cl 'w's1>
+clr s1 = <cl 'r's1>
+w s1 = +
+       <p s1<st1>> +
+       <p s1     > +
+       <p s1<st2>>
+st1 = ('x()')
+st2 = + 
+     'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa' +
+   '\nbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb' +
+     'ccccccccccccccccccccccccccccccccccccccccccccccccccccccc' +
+     'ddddddddddddddddddddddddddddddddddddddddddddddddddddddd'
+rw s1s2 = <rez s1s2 <g s1>>
+rez s1s2 /0/ =
+    s1s2 ex  = <p s2 ex> <rw s1s2>
+ end

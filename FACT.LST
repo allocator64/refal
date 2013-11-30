@@ -1,0 +1,20 @@
+
+   1 fact start                                                              
+   2    entry go                                                             
+   3    extrn NUMB,SYMB,CVD,FIRST                                            
+   4    extrn MUL                                                            
+   5    extrn PROUT,CARD,M1,apply                                            
+   6 go       = k/fact/ k/numb/ k/prout/' give a number: '. k/card/...       
+   7 fact /0/ =                                                              
+   8      e1  = k/pr/ k/symb/e1.'!=' k/cvd/ k/f0/e1... k/go/.                
+   9 f0 e1 = <fr <apply /f/e1>>                                              
+  10 fr s1 e2 = k/prout/'rez='s1.e2                                          
+  11 f    /1/ = /1/                                                          
+  12      e1  = k/mul/(e1) k/f0/ k/m1/e1...                                  
+  13 pr       =                                                              
+  14      e1  = k/pr1/ k/first//80/e1..                                      
+  15 pr1 (e1)e2 = k/prout/e1. k/pr/e2.                                       
+  16     '*' e1 = k/prout/e1.                                                
+  17  end                                                                    
+mod_name = FACT      mod_length(lines) = 17
+                     obj_length(bytes) = 323

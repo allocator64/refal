@@ -1,0 +1,229 @@
+#include "refal.def"
+#include <stdio.h>
+#define fmax 5
+extern REFAL refal;
+
+FILE *fopen();
+FILE *inr;
+FILE *inw;
+static FILE *uniput[fmax], *uniget[fmax];
+static int  junp=1;
+static int  jung=1;
+static long jl;
+
+static VOID opng_() {
+ linkcb *p;
+ char namf[40];
+ register i;
+   for (i=0; i<40; i++)  namf[i] = '\0';
+   p = refal.preva->next;
+   if (p->tag != TAGN) jl = 0;  /* jung zamenila na jl */
+   else { jl = p->info.coden; p = p->next; }
+   if (jl >= fmax ) goto HEOT; else jung = jl;
+   for (i=0; p != refal.nexta; i++)
+      if (( p->tag != TAGO ) || ( i==40)) goto HEOT;
+      else {
+         namf[i] = p->info.infoc;
+         p = p->next;
+      }
+   inr = fopen(namf,"r");
+   /*printf("\n opn, namf=%s flg=%d fd=%d",namf,inr->flags,inr->fd);*/
+   if (inr == NULL) {
+      printf("\nopnget: can't open file %s",namf);
+      goto HEOT1;
+   }
+   uniget[jung] = inr;
+   return;
+HEOT:  printf("\nopnget: format error");
+HEOT1: refal.upshot = 2;  return;
+}
+static char opng_0[] = {Z6    'O','P','N','G','E','T','\006'};
+G_L_B char opnget = '\122';   static VOID (*opng_1)() = opng_;
+
+static VOID opnp_() { 
+ linkcb *p;
+ char namf[40];
+ register i;
+   for (i=0; i<40; i++)  namf[i] = '\0';
+   p = refal.preva->next;
+   if (p->tag != TAGN) jl = 0;  /* eg - zamenila junp na jl */
+   else { jl = p->info.coden; p = p->next; }
+   if (jl >= fmax ) goto HEOT; else junp = jl;
+   for (i=0; p != refal.nexta; i++)
+      if (( p->tag != TAGO ) || ( i==40)) goto HEOT;
+      else {
+         namf[i] = p->info.infoc;
+         p = p->next;
+      }
+   inw = fopen(namf,"w");
+   /*printf("\n opn, namf=%s flg=%d fd=%d",namf,inw->flags,inw->fd);*/
+   if (inw == NULL) {
+      printf("\nopnput: can't open file %s",namf);
+      goto HEOT1;
+   }
+   uniput[junp] = inw;
+   return;
+HEOT:  printf("\nopnput: format error");
+HEOT1: refal.upshot = 2;  return;
+}
+static char opnp_0[] = {Z6    'O','P','N','P','U','T','\006'};
+G_L_B char opnput = '\122';   static VOID (*opnp_1)() = opnp_;
+           
+static VOID clsg_() {
+ linkcb *p;
+   p = refal.preva->next;
+   if (p->tag != TAGN)  jl = 0;    
+   else { jl = p->info.coden; p = p->next; }
+   if ( jl >= fmax ) goto HEOT; else jung = jl;
+   inr = uniget[jung];
+   /*printf("\n cls, flg=%d fd=%d",inr->flags,inr->fd);*/
+   fclose(inr);
+   return;
+HEOT:
+   printf("\nclsget: format error");
+   refal.upshot = 2;  return;
+}
+static char clsg_0[] = {Z6   'C','L','S','G','E','T','\006'};
+G_L_B char clsget = '\122';  static VOID (*clsg_1)() = clsg_;
+
+static VOID clsp_() {
+ linkcb *p;
+   p = refal.preva->next;
+   if (p->tag != TAGN)  jl = 0;  
+   else { jl = p->info.coden; p = p->next;}
+   if ( jl >= fmax ) goto HEOT; else junp = jl;
+   inw = uniput[junp];
+   /*printf("\n cls, flg=%d fd=%d",inw->flags,inw->fd);*/
+   fclose(inw);
+   return;
+HEOT: 
+   printf("\nclsput: format error");
+   refal.upshot = 2;  return;
+}
+static char clsp_0[] = {Z6   'C','L','S','P','U','T','\006'};
+G_L_B char clsput = '\122';  static VOID (*clsp_1)() = clsp_;
+
+static VOID libg_() {
+ linkcb *p;
+ char s[80];
+ int i,j,c,new;
+   p = refal.preva->next;
+   new=0;
+   if (p->tag != TAGN) {jl = 0; new=1;}  
+   else { jl = p->info.coden; p = p->next;}
+   if ( jl >= fmax ) goto HEOT; else jung = jl;
+   inr = uniget[jung];
+   s[0] = ' ';
+   for (i = 0; ((c = getc(inr)) != '\n') && (c != EOF) && (i < 80); i++)
+      s[i] = c;
+   if (c == EOF) return;
+   if (new==1) { /* sovmestimost s ES */
+      p = refal.prevr;
+      if(slins(p,80)==0) return;
+      for(j=0; j<i; j++) {
+         p = p->next;
+         p->tag = TAGO; pcoden(p, 0l); p->info.infoc = s[j]; }
+      for(j=i; j<80; j++) {
+         p = p->next;
+         p->tag = TAGO; pcoden(p, 0l); p->info.infoc = ' '; }
+      return;
+   }
+   if ( i<80 ) i = i-1;
+   for ( ; i>1; i-- )
+      if (s[i] != ' ') goto WYW;
+WYW:
+   j = i+1;
+   if (j>80) j = 80;
+   p = refal.prevr;
+   for (i=0; i<j; i++) {
+      if(slins(p,1)==0) return;
+      p = p->next;
+      pcoden(p, 0l);
+      if(s[0]==EOF) { p->tag = TAGN; return; }
+      p->tag = TAGO;
+      p->info.infoc = s[i];
+   }
+   return;
+HEOT:
+   printf("\nlibget: format error");
+   refal.upshot = 2;  return;
+}
+static char libg_0[] = {Z6    'L','I','B','G','E','T','\006'};
+G_L_B char libget = '\122';   static VOID (*libg_1)() = libg_;
+
+static VOID libp_() {
+ linkcb *p;
+ char s[81];
+ int i,c;
+   p = refal.preva->next;
+   if (p->tag != TAGN)  jl = 0;  
+   else { jl = p->info.coden; p = p->next;}
+   if ( jl >= fmax ) goto HEOT; else junp = jl;
+   inw = uniput[junp];
+   for (i = 0; p != refal.nexta; i++) {
+      if((p->tag != TAGO) && (p->tag != TAGLB) && (p->tag != TAGRB)) {
+HEOT:    refal.upshot = 2; return; }
+      if (i==80) {
+         c = '\n';  putc(c,inw);
+         i=0;
+      }
+      switch (p->tag) {
+         case TAGLB: c='('; break;
+         case TAGRB: c=')'; break;
+         default   : c= p->info.infoc;
+      }
+      p = p->next;
+      putc(c,inw);
+   }
+   if (i!=0)  {
+      c = '\n';  putc(c,inw);
+   }
+   return;
+}
+static char libp_0[] = {Z6   'L','I','B','P','U','T','\006'};
+G_L_B char libput = '\122';  static VOID (*libp_1)() = libp_;
+
+static VOID card_() {
+ linkcb *p;
+ char c;
+   if (refal.preva->next != refal.nexta) /* refal.upshot = 2; */
+      rfpex("",refal.preva,refal.nexta);
+   p = refal.prevr;
+   while ((c = getchar()) != '\n') {
+      if ( slins(p,1)==0 ) return;
+      p = p->next;
+      p->info.codep = NULL;
+      if(c==EOF) { p->tag = TAGN; return; }
+      p->info.infoc = c;
+      p->tag = TAGO;
+   }
+   return;
+}
+static char card_0[] = {Z4          'C','A','R','D','\004'};
+G_L_B char card = '\122';   static VOID (*card_1)() = card_;
+
+static VOID pr1_() {
+  rfpex("", refal.preva, refal.nexta);
+  rftpl(refal.prevr, refal.preva, refal.nexta);  return;
+}
+static char pr1_0[] = {Z5     'P','R','I','N','T','\005'};
+G_L_B char print = '\122';  static VOID (*pr1_1)() = pr1_;
+
+static VOID pr2_() {
+   rfpexm("", refal.preva, refal.nexta);
+   rftpl(refal.prevr, refal.preva, refal.nexta);  return;
+}
+static char pr2_0[] = {Z6   'P','R','I','N','T','M','\006'};
+G_L_B char printm = '\122';   static VOID (*pr2_1)() = pr2_;
+                               
+static VOID pr3_() {
+   rfpex("", refal.preva, refal.nexta);  return;
+}
+static char pr3_0[] = {Z5     'P','R','O','U','T','\005'};
+G_L_B char prout = '\122';  static VOID (*pr3_1)() = pr3_;
+
+static VOID pr4_() {
+   rfpexm("", refal.preva, refal.nexta);  return;
+}
+static char pr4_0[] = {Z6   'P','R','O','U','T','M','\006'};
+G_L_B char proutm = '\122';   static VOID (*pr4_1)() = pr4_;

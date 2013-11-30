@@ -1,0 +1,42 @@
+* «адачи на вычисление выражений
+* ƒано арифметическое выражение следующего вида:
+* <выражение>::= <слагаемое> | <выражение> <знак1> <слагаемое>
+* <знак1>::= + | Ц
+* <слагаемое>::= <множитель> | <слагаемое> <знак2> <множитель>
+* <знак2>::= * | /
+* <множитель>::= <целое без знака> | <идентификатор> | (<выражение>)
+* ƒл€ всех идентификаторов в копилке есть значени€. ¬ычислить заданное выражение.
+
+
+   start
+   entry go
+   extrn NUMB 
+   extrn DIV,MUL,ADD,SUB
+   extrn PROUT,CARD
+   extrn BR,DG,CP
+go = <calculation<paring<kopilka><prout ' give a formula: '> <card>>>
+
+kopilka  = <br 'x=5'><br 'y=6'><br 'z=9'>
+paring e1')'e2 = <paring<par1 e1>e2>
+            e1 = e1
+
+par1 R e1'('e2 = e1(e2) 
+
+calculation R e1s('-+')3e2 = <cal1<calculation e1> s3 <slag e2>>
+                         e1 = <slag e1>
+
+cal1 e1'+'e2 = <add (e1)e2>
+     e1'-'e2 = <sub (e1)e2>
+
+slag R e1s('*/')3e2 = <cal2<slag e1> s3 <mnog e2>>
+                    e1 = <mnog e1>
+
+cal2 e1'*'e2 = <mul (e1)e2>
+     e1'/'e2 = <div (e1)e2>
+
+mnog (e1)    = <calculation e1>
+ s(L)1e(LD)2 = <numb<CP s1e2>>
+       v(D)1 = <numb v1>
+
+
+ end

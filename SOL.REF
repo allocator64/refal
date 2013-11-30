@@ -1,0 +1,151 @@
+* MAIN_expr ::= ASSIGN_expr | MAIN_expr , ASSIGN_expr
+* ASSIGN_expr ::= COND_expr | VAR ASSIGN_op ASSIGN_expr
+* ASSIGN_op ::= = | += | -= | *= | /= | %= | <<= | >>=
+* COND_expr ::= OR_expr | OR_expr ? COND_expr : COND_expr
+* OR_expr ::= BINARY_AND_expr | OR_expr || BINARY_AND_expr
+* AND_expr ::= EQ_expr | AND_expr && EQ_expr
+* EQ_expr ::= GE_expr | EQ_expr EQ_op GE_expr
+* EQ_op ::= == | !=
+* GE_expr ::= SHIFT_expr | GE_expr GE_op SHIFT_expr
+* GE_op ::= < | <= | > | >=
+* SHIFT_expr ::= SUM_expr | SHIFT_expr SHIFT_op SUM_expr
+* SHIFT_op ::= << | >>
+* SUM_expr ::= MUL_expr | SUM_expr SUM_op MUL_expr
+* SUM_op ::= + | -
+* MUL_expr ::= UNARY_expr | MUL_expr MUL_op UNARY_expr
+* MUL_op ::= * | / | %
+* UNARY_expr ::= POSTFIX_expr | UNARY_op UNARY_expr
+* UNARY_op ::= ! | ++ | -- | + | -
+* POSTFIX_expr ::= PRIME_expr | POSTFIX1_expr
+* POSTFIX1_expr ::= VAR | POSTFIX1_expr POSTFIX1_op
+* POSTFIX1_op ::= ++ | --
+* PRIME_expr ::= VAR | DIGITS | (MAIN_expr)
+
+
+  start
+  entry go
+  extrn NUMB,SYMB,CVD,FIRST,LAST
+  extrn DIV,MUL,ADD,SUB,NREL,DR
+  extrn PROUT,CARD,PROUTM
+  empty PLUSASSIGN, MINUSASSIGN, MULASSIGN, DIVASSIGN, REMASSIGN, LSHIFTASSIGN, RSHIFTASSIGN, EQ, NE, GE, LE, LSHIFT, RSHIFT, PP, MM, OR, AND
+
+*go = <prout 'Please, enter C-style expression>'><prout 'Result: '<eval <card>>>
+go = <proutm <eval <card>>>
+
+eval
+  e1 = <MAIN_expr <preprocess e1>>
+
+MAIN_expr
+  e1 = <ASSIGN_expr e1>
+
+ASSIGN_expr
+  e1 = <COND_expr e1>
+
+COND_expr
+  e1 = <OR_expr e1>
+
+OR_expr
+  e1 = <AND_expr e1>
+
+AND_expr
+  e1 = <EQ_expr e1>
+
+EQ_expr
+  e1 = <GE_expr e1>
+
+GE_expr
+  e1 = <SHIFT_expr e1>
+
+SHIFT_expr
+  e1 = <SUM_expr e1>
+
+SUM_expr
+  e1 = <MUL_expr e1>
+
+MUL_expr
+  R e1s('*/%')2e3 = <mul_helper <MUL_expr e1> s2 <UNARY_expr e3>>
+  R      e1 = <UNARY_expr e1>
+
+UNARY_expr
+  R '-'e1 = <SUB (/0/) <UNARY_expr e1>>
+  R '+'e1 = <UNARY_expr e1>
+  R '!'e1 = <not_helper <UNARY_expr e1>>
+  R    e1 = <POSTFIX_expr e1>
+
+POSTFIX_expr
+  e1 = <PRIME_expr e1>
+
+PRIME_expr
+  (e1)  = <MAIN_expr e1>
+  e(D)1 = <numb e1>
+
+preprocess
+  e1 = <parentheses <escape e1>>
+
+parentheses
+  e1')'e2 = <parentheses <parentheses_helper e1> e2>
+  e1      = e1
+
+parentheses_helper
+  R e1'('e2 = e1(e2)
+
+escape
+  e1'+='e2  = <escape e1/PLUSASSIGN/e2>
+  e1'-='e2  = <escape e1/MINUSASSIGN/e2>
+  e1'/='e2  = <escape e1/DIVASSIGN/e2>
+  e1'%='e2  = <escape e1/REMASSIGN/e2>
+  e1'<<='e2 = <escape e1/LSHIFTASSIGN/e2>
+  e1'>>='e2 = <escape e1/RSHIFTASSIGN/e2>
+  e1'=='e2  = <escape e1/EQ/e2>
+  e1'!='e2  = <escape e1/NE/e2>
+  e1'>='e2  = <escape e1/GE/e2>
+  e1'<='e2  = <escape e1/LE/e2>
+  e1'<<'e2  = <escape e1/LSHIFT/e2>
+  e1'>>'e2  = <escape e1/RSHIFT/e2>
+  e1'++'e2  = <escape e1/PP/e2>
+  e1'--'e2  = <escape e1/MM/e2>
+  e1'&&'e2  = <escape e1/AND/e2>
+  e1'||'e2  = <escape e1/OR/e2>
+  e1        = e1
+
+not_helper
+  '-'s(N)1 = <bool_helper <nrel (/0/) s1>>
+  s(N)1 = <bool_helper <nrel (/0/) s1>>
+
+bool_helper
+  s('<>')1e2 = /0/
+  '='e1      = /1/
+
+unpack_helper
+  (e1) = e1
+
+mul_helper
+  s(N)1'*'s(N)2 = <mul (s1) s2>
+  s(N)1'/'s(N)2 = <div (s1) s2>
+  s(N)1'%'s(N)2 = <unpack_helper <last /1/<dr (s1) s2>>>
+
+  end   
+
+
+* go = <calculation<paring<prout ' give a formula: '><card>>>
+* 
+* paring e1')'e2 = <paring<par1 e1> e2>
+*             e1 = e1
+* par1 R e1'('e2 = e1(e2) 
+* 
+* calculation R e1s('-+')3e2 = <cal1<calculation e1> s3 <slag e2>>
+*                          e1 = <slag e1>
+* 
+* cal1 e1'+'e2 = <add (e1)e2>
+*      e1'-'e2 = <sub (e1)e2>
+* 
+* slag R e1s('*/')3e2 = <cal2 <slag e1> s3 <mnog e2>>
+*                     e1 = <mnog e1>
+* 
+* cal2 e1'*'e2 = <mul (e1)e2>
+*      e1'/'e2 = <div (e1)e2>
+* 
+* mnog (e1) = <calculation e1>
+*        e1 = <numb e1>
+* 
+*  end

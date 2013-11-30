@@ -1,0 +1,69 @@
+
+     Алфавитный список первичных функций
+     <add ( E(N)1 ) E(N)2 >    --> E(N)r  . . . . . . 2-
+     <apply Ee >               --> Sz Er  . . . . . . 2-
+     <br Vx '=' Ey >           --> пусто  . . . . . . 1-,2-
+     <card >                   --> пусто  . . . . . . 2-
+     <chartof E(LD)e >         --> /символ_метка/ . . 2- 
+     <clsget Nn >              --> пусто  . . . . . . 2-
+     <clsput Nn >              --> пусто  . . . . . . 2-
+     <cp Vx >                  --> Ey   . . . . . . . 1-,2-
+     <cvb E(D)x >              --> E(N)y  . . . . . . 2-
+     <cvd E(N)x >              --> E(D)y  . . . . . . 2-
+     <dg Vx >                  --> Ey   . . . . . . . 1-,2-
+     <dgall >                  --> Ee   . . . . . . . 1-,2-
+     <div ( E(N)1 ) E(N)2 >    --> Nx   . . . . . . . 2-
+     <dr ( E(N)1 ) E(N)2 >     --> E(N)q ( E(N)r ). . 2-
+     <first Nn Ee >            --> ( E1 ) E2  . . . . 2-
+     <ftochar /символ_метка/ > --> E(LD)e . . . . . . 2-
+     <functab /символ_метка/ > --> пусто  . . . . . . 2-
+     <gtr Sz >                 --> Ee . . . . . . . . 1-,2-
+     <last Nn Ee >             --> E1 (E2). . . . . . 2-
+     <lengr Ee >               --> Nn . . . . . . . . 2-
+     <lengw Ee >               --> Nn . . . . . . . . 2-
+     <libget Nn >              --> Ee . . . . . . . . 2-
+     <libput Nn Ee >           --> пусто. . . . . . . 2-
+     <mul ( E(N)1 ) E(N)2 >    --> E(N)r  . . . . . . 2-                                                                                                  
+     <multe Nn Ee >            --> Ee Ee ... Ee . . . 2-
+     <m1 Nn >                  --> Nn - 1   . . . . . 2-
+     <new Ee >                 --> Sx   . . . . . . . 1-,2-
+     <nrel ( E(N)1 ) E(N)2 >   --> Sz (E1) E2 . . . . 2-
+     <numb E(D)d >             --> E(N)n  . . . . . . 2-
+     <opnget Nn Ee >           --> пусто  . . . . . . 2-
+     <opnput Nn Ee >           --> пусто  . . . . . . 2-
+     <print Ee >               --> Ee   . . . . . . . 2- 
+     <printm Ee >              --> Ee   . . . . . . . 2-
+     <prout Ee >               --> пусто  . . . . . . 2-
+     <proutm Ee >              --> пусто  . . . . . . 2-
+     <ptr Sz Ee >              --> пусто  . . . . . . 1-,2-
+     <p1 Nn >                  --> Nn + 1 . . . . . . 2-
+     <rdr Sz >                 --> Ez   . . . . . . . 1-,2- 
+     <rp Vx '=' Ey >           --> пусто. . . . . . . 1-,2-
+     <sub ( E(n)1) E(N)2 >     --> E(N)n  . . . . . . 2-
+     <swr Sz Ee >              --> E0   . . . . . . . 1-,2-
+     <symb Nn >                --> E(D)e  . . . . . . 2-
+     <type Ee >                --> Sz Ee  . . . . . . 2-
+     <wtr Sz Ee >              --> пусто  . . . . . . 1-,2-
+     
+     
+     Алфавитный список процедур интерфейса
+     lcopy(r,p,q) . . . . . . . 3-
+     lcre(&st)  . . . . . . . . 3-
+     lexist(&st). . . . . . . . 3-
+     lgcl()   . . . . . . . . . 3-
+     lincrm() . . . . . . . . . 3-
+     lins(p,l)  . . . . . . . . 3-
+     linskd(&st,&f) . . . . . . 3-
+     lldupl(p,q,u)  . . . . . . 3-
+     lrqlk(l)   . . . . . . . . 3-
+     rfabe(text)  . . . . . . . 3-
+     rfcanc(&st)  . . . . . . . 3-
+     rfdel(p,q)   . . . . . . . 3-
+     rfinit()   . . . . . . . . 3-
+     rflist(array,n). . . . . . 3-
+     rfpex(text,p,q). . . . . . 3-
+     rfpexm(text,p,q) . . . . . 3-
+     rfrun(&st)   . . . . . . . 3-
+     rfterm()   . . . . . . . . 3-
+     rftermm()  . . . . . . . . 3-
+     rftpl(r,p,q) . . . . . . . 3-

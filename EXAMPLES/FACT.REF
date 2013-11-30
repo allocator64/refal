@@ -1,0 +1,17 @@
+fact start
+   entry go
+   extrn NUMB,SYMB,CVD,FIRST 
+   extrn MUL
+   extrn PROUT,CARD,M1,apply
+go       = k/fact/ k/numb/ k/prout/' give a number: '. k/card/... 
+fact /0/ = 
+     e1  = k/pr/ k/symb/e1.'!=' k/cvd/ k/f0/e1... k/go/.
+f0 e1 = <fr <apply /f/e1>>
+fr s1 e2 = k/prout/'rez='s1.e2
+f    /1/ = /1/
+     e1  = k/mul/(e1) k/f0/ k/m1/e1...
+pr       =
+     e1  = k/pr1/ k/first//80/e1..
+pr1 (e1)e2 = k/prout/e1. k/pr/e2.
+    '*' e1 = k/prout/e1.
+ end
