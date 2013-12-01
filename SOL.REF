@@ -26,13 +26,14 @@
   entry go
   extrn NUMB,SYMB,CVD,CVB,BR,CP,RP
   extrn DIV,MUL,ADD,SUB,NREL,DR,M1
-  extrn PROUT,CARD,PROUTM,ERROR
+  extrn PROUT,CARD,PROUTM,ERROR,APPLY
   empty PLUSASGN, MINUSASGN, MULASGN, DIVASGN, REMASGN, LSHIFTASGN, RSHIFTASGN, EQ, NE, GE, LE, LSHIFT, RSHIFT, PP, MM, OR, AND
   
-go = <eval <card>>
+go = <eval<card>>
+*go = <apply /eval/ <card>>
 
 eval
-  e1 = <MAIN_expr <preprocess e1>>
+  e1 = <cvd <MAIN_expr <preprocess e1>>>
 
 MAIN_expr
   R v1','v2 = <rp 'trash='<MAIN_expr v1>><ASSIGN_expr v2>
@@ -74,15 +75,17 @@ MUL_expr
   R e1            = <UNARY_expr e1>
 
 UNARY_expr
-  R s('-+!')1v2 = <unary_hp s1 <UNARY_expr v2>>
-  R e1          = <POSTFIX_expr e1>
+  s('-+!')1v2    = <unary_hp s1 <UNARY_expr v2>>
+  s(/PP//MM/)1v2 = <unary_hp s1 v2>
+  e1             = <POSTFIX_expr e1>
 
 POSTFIX_expr
+  R v1s(/PP//MM/)2 = <postfix_xx (v1)s2>
   e1 = <PRIME_expr e1>
 
 PRIME_expr
   (v1)  = <MAIN_expr v1>
-  v(D)1 = <numb v1>
+  v(D)1 = <cvb v1>
   s('_'L)1e('_'LD)2 = <storage_get s1e2>
 
 preprocess
@@ -174,9 +177,10 @@ sum_hp
   v1'-'v2 = <sub (v1) v2>
 
 unary_hp
-  '-'v1 = <SUB (/0/) v1>
-  '+'v1 = v1
-  '!'v1 = <not_hp v1>
+  s(/PP//MM/)1v2 = <prefix_xx (s1)v2>
+  '-'v1          = <SUB (/0/) v1>
+  '+'v1          = v1
+  '!'v1          = <not_hp v1>
 
 shift_hp
   v1s(/RSHIFT//LSHIFT/)2/0/ = v1
@@ -222,6 +226,8 @@ assign_do
   ((v1)/MULASGN/)v3 = <storage_put (v1)<MUL (<storage_get v1>) v3>>
   ((v1)/DIV/)v3 = <storage_put (v1)<DIV (<storage_get v1>) v3>>
   ((v1)/REMASGN/)v3 = <storage_put (v1)<mul_hp <storage_get v1> '%' v3>>
+  ((v1)/LSHIFTASGN/)v3 = <storage_put (v1)<shift_hp <storage_get v1> /LSHIFT/ v3>>
+  ((v1)/RSHIFTASGN/)v3 = <storage_put (v1)<shift_hp <storage_get v1> /RSHIFT/ v3>>
   
 storage_put
   (v1)v(N)2 = <rp '_'v1 '=' v2>v2
@@ -230,6 +236,14 @@ storage_put
 
 storage_get
   v1 = <check_value (v1)<cp '_'v1>>
+
+prefix_xx
+  (/PP/)v1 = <assign_hp ((v1)/PLUSASGN/)/1/>
+  (/MM/)v1 = <assign_hp ((v1)/MINUSASGN/)/1/>
+
+postfix_xx
+  (v1)/PP/ = <sub (<prefix_xx (/PP/)v1>) /1/>
+  (v1)/MM/ = <add (<prefix_xx (/MM/)v1>) /1/>
 
 check_value
   (v1)v2 = v2
