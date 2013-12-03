@@ -27,7 +27,7 @@
   extrn NUMB,SYMB,CVD,CVB,BR,CP,RP
   extrn DIV,MUL,ADD,SUB,NREL,DR,M1
   extrn PROUT,CARD,PROUTM,ERROR,APPLY
-  empty PLUSASGN, MINUSASGN, MULASGN, DIVASGN, REMASGN, LSHIFTASGN, RSHIFTASGN, EQ, NE, GE, LE, LSHIFT, RSHIFT, PP, MM, OR, AND
+  empty PLUSASGN, MINUSASGN, MULASGN, DIVASGN, REMASGN, LSHIFTASGN, RSHIFTASGN, EQ, NE, GE, LE, LSHIFT, RSHIFT, PP, MM, OR, AND, UMINUS, UPLUS
   
 go = <eval<card>>
 *go = <apply /eval/ <card>>
@@ -75,9 +75,9 @@ MUL_expr
   R e1            = <UNARY_expr e1>
 
 UNARY_expr
-  s('-+!')1v2    = <unary_hp s1 <UNARY_expr v2>>
-  s(/PP//MM/)1v2 = <unary_hp s1 v2>
-  e1             = <POSTFIX_expr e1>
+  s('!'/UPLUS//UMINUS/)1v2 = <unary_hp s1 <UNARY_expr v2>>
+  s(/PP//MM/)1v2           = <unary_hp s1 v2>
+  e1                       = <POSTFIX_expr e1>
 
 POSTFIX_expr
   R v1s(/PP//MM/)2 = <postfix_xx (v1)s2>
@@ -89,7 +89,7 @@ PRIME_expr
   s('_'L)1e('_'LD)2 = <storage_get s1e2>
 
 preprocess
-  e1 = <parentheses <clean_ws <escape e1>>>
+  e1 = <parentheses <escape_unary <clean_ws <escape e1>>>>
 
 parentheses
   e1')'e2 = <parentheses <parentheses_hp e1> e2>
@@ -116,6 +116,13 @@ escape
   e1'&&'e2  = <escape e1/AND/e2>
   e1'||'e2  = <escape e1/OR/e2>
   e1        = e1
+
+escape_unary
+  '-'e1 = <escape_unary /UMINUS/e1>
+  '+'e1 = <escape_unary /UPLUS/e1>
+  e1s(('_)'DL))2'-'e3 = <escape_unary e1s2/UMINUS/e3>
+  e1s(('_)'DL))2'+'e3 = <escape_unary e1s2/UPLUS/e3>
+  e1                  = e1
 
 clean_ws
   e1' 'e2 = <clean_ws e1 e2>
@@ -178,8 +185,8 @@ sum_hp
 
 unary_hp
   s(/PP//MM/)1v2 = <prefix_xx (s1)v2>
-  '-'v1          = <SUB (/0/) v1>
-  '+'v1          = v1
+  /UMINUS/v1     = <SUB (/0/) v1>
+  /UPLUS/v1      = v1
   '!'v1          = <not_hp v1>
 
 shift_hp
