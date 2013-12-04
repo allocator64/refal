@@ -120,8 +120,8 @@ escape
 escape_unary
   '-'e1 = <escape_unary /UMINUS/e1>
   '+'e1 = <escape_unary /UPLUS/e1>
-  e1s(('_)'DL))2'-'e3 = <escape_unary e1s2/UMINUS/e3>
-  e1s(('_)'DL))2'+'e3 = <escape_unary e1s2/UPLUS/e3>
+  e1s(('_)'DL/PP//MM/))2'-'e3 = <escape_unary e1s2/UMINUS/e3>
+  e1s(('_)'DL/PP//MM/))2'+'e3 = <escape_unary e1s2/UPLUS/e3>
   e1                  = e1
 
 clean_ws
