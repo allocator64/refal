@@ -28,7 +28,7 @@
   extrn DIV,MUL,ADD,SUB,NREL,DR,M1
   extrn PROUT,CARD,PROUTM,ERROR,APPLY
   empty PLUSASGN, MINUSASGN, MULASGN, DIVASGN, REMASGN, LSHIFTASGN, RSHIFTASGN, EQ, NE, GE, LE, LSHIFT, RSHIFT, PP, MM, OR, AND, UMINUS, UPLUS
-  
+
 go = <eval<card>>
 *go = <apply /eval/ <card>>
 
@@ -47,11 +47,11 @@ COND_expr
   v1 = <cond_base_hp <cond_hp v1>>
 
 OR_expr
-  R v1/OR/v2 = <bool_or (<bool <OR_expr v1>>) <bool <AND_expr v2>>>
+  R v1/OR/v2 = <bool_or_wrap (<bool <OR_expr v1>>) v2>
   e1 = <AND_expr e1>
 
 AND_expr
-  R v1/AND/v2 = <bool_and (<bool <AND_expr v1>>) <bool <EQ_expr v2>>>
+  R v1/AND/v2 = <bool_and_wrap (<bool <AND_expr v1>>) v2>
   e1 = <EQ_expr e1>
 
 EQ_expr
@@ -135,17 +135,13 @@ not_hp
 bool
   v1 = <not_hp <not_hp v1>>
 
-bool_and
-  (/0/)/0/ = /0/
-  (/0/)/1/ = /0/
-  (/1/)/0/ = /0/
-  (/1/)/1/ = /1/
+bool_and_wrap
+  (/0/)v1 = /0/
+  (/1/)v1 = <bool <EQ_expr v1>>
 
-bool_or
-  (/0/)/0/ = /0/
-  (/0/)/1/ = /1/
-  (/1/)/0/ = /1/
-  (/1/)/1/ = /1/
+bool_or_wrap
+  (/1/)v1 = /1/
+  (/0/)v1 = <bool <AND_expr v1>>
 
 bool_eq
   s('=')1v2 = /1/
@@ -239,7 +235,7 @@ assign_do
 storage_put
   (v1)v(N)2 = <rp '_'v1 '=' v2>v2
   (v1)'-'v(N)2 = <rp '_'v1 '=' '-'v2>'-'v2
-  (v1)e2 = <prout 'incorrect value 'e2>
+  (v1)e2 = <prout 'incorrect value ('e2')'>
 
 storage_get
   v1 = <check_value (v1)<cp '_'v1>>
@@ -254,6 +250,11 @@ postfix_xx
 
 check_value
   (v1)v2 = v2
-  (v1)e2 = <prout 'use of undeclared identifier 'v1><error>
+  (v1)e2 = <proutm 'input new value for 'v1><storage_put (v1)<get_int>>
+
+get_int
+  '-'v(D)1 = <cvb '-'v1>
+  v(D)1 = <cvb v1>
+  e1 = <get_int <card 'new value>'>>
 
   end
